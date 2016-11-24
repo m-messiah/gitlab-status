@@ -1,0 +1,27 @@
+build:
+  stage: build
+  image: golang
+  script:
+    - go build
+    - REDIRECT_URL="http://127.0.0.1:8080/oauth-authorized" ./status &
+    - sleep 5
+    - curl -f http://127.0.0.1:8080/ | grep "login"
+    - curl -f http://127.0.0.1:8080/login | grep "$GITLAB_URL"
+  artifacts:
+    expire_in: 1w
+    paths:
+      - status
+deploy:
+  stage: deploy
+  tags:
+    - ansible
+  script:
+    - ansible-playbook -i $STATUS_HOST, deploy.yml
+  dependencies:
+    - build
+  environment:
+    name: status
+    url: https://$STATUS_URL
+  only:
+    - master
+

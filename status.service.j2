@@ -1,0 +1,17 @@
+[Unit]
+Description=Gitlab CI Status
+After=network.target
+
+[Service]
+Environment=REDIRECT_URL=https://{{ server_url }}/oauth-authorized
+Environment=GITLAB_URL={{ lookup('env', 'GITLAB_URL') }}
+Environment=GITLAB_APP_KEY={{ lookup('env', 'GITLAB_APP_KEY') }}
+Environment=GITLAB_APP_SECRET={{ lookup('env', 'GITLAB_APP_SECRET ') }}
+ExecStart=/opt/status/status
+User={{ project.user }}
+Restart=always
+RestartSec=5
+WorkingDirectory={{ project.path }}
+
+[Install]
+WantedBy=multi-user.target

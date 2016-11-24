@@ -1,0 +1,40 @@
+---
+- name: Deploy application
+  hosts: all
+  become: yes
+  vars:
+    project:
+      user: "www-data"
+      path: /opt/status/
+    server_url: "{{ lookup('env', 'STATUS_URL') }}"
+  tasks:
+    - name: Create directory
+      file: name="{{ project.path }}" owner={{ project.user }} group={{ project.user }} state=directory
+      tags:
+        - specific
+        - production
+      notify: restart status
+    - name: Update status.service
+      template: src="{{ playbook_dir }}/status.service.j2" dest=/etc/systemd/system/multi-user.target.wants/status.service
+      tags:
+        - specific
+      notify: restart status
+    - name: Copy application
+      become: yes
+      become_user: "{{ project.user }}"
+      copy:
+        src: "{{ playbook_dir }}/status"
+        dest: "{{ project.path }}/status"
+        owner: "{{ project.user }}"
+        mode: 0755
+      tags:
+        - specific
+        - production
+      notify: restart status
+
+  handlers:
+    - name: reload daemon
+      command: systemctl daemon-reload
+      notify: restart status
+    - name: restart status
+      service: name=status state=restarted
