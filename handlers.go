@@ -41,7 +41,7 @@ func (self GitLab) Get_status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	commit := self.Get_commit(project_id, projects[project_id_for_map].Default_branch, gitlab_token.Value)
-	all_builds := self.Get_builds(project_id, commit.Id, gitlab_token.Value)
+	all_builds := self.Get_builds(project_id, commit.Id, projects[project_id_for_map].Default_branch, gitlab_token.Value)
 	builds := make(map[string]Build)
 	var coverage *float32
 	for _, b := range all_builds {

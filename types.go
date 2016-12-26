@@ -1,7 +1,7 @@
 package main
 
 type GitLab struct {
-	url				 string
+	url              string
 	api_url          string
 	authorize_url    string
 	access_token_url string
@@ -24,6 +24,7 @@ type Build struct {
 	Id       uint64
 	Status   string
 	Name     string
+	Ref      string
 	Coverage *float32
 }
 
@@ -40,5 +41,5 @@ type Status struct {
 	Project  ApiResponse
 	Builds   map[string]Build
 	Coverage *float32
-	Url		 string
+	Url      string
 }

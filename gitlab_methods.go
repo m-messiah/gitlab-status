@@ -9,7 +9,7 @@ import (
 
 func NewGitLab(gitlab_url, access_key, secret_key string) *GitLab {
 	return &GitLab{
-		url:			  gitlab_url,
+		url:              gitlab_url,
 		api_url:          gitlab_url + "/api/v3/projects/",
 		authorize_url:    gitlab_url + "/oauth/authorize",
 		access_token_url: gitlab_url + "/oauth/token",
@@ -86,12 +86,18 @@ func (self GitLab) Get_commit(project_id, branch, token string) *Commit {
 	return &response.Commit
 }
 
-func (self GitLab) Get_builds(project_id, commit_id, token string) []Build {
-	var builds []Build
+func (self GitLab) Get_builds(project_id, commit_id, branch, token string) []Build {
+	var all_builds []Build
+	builds := make([]Build, 0)
 	url := project_id
 	if commit_id != "" {
 		url += "/repository/commits/" + commit_id
 	}
-	self.Get_API(url+"/builds", "0", "100", token, &builds)
+	self.Get_API(url+"/builds", "0", "100", token, &all_builds)
+	for _, build := range all_builds {
+		if build.Ref == branch {
+			builds = append(builds, build)
+		}
+	}
 	return builds
 }
