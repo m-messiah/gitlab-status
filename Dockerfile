@@ -1,2 +1,5 @@
-FROM golang:onbuild
-ENV REDIRECT_URL http://status:8080/oauth-authorized
+FROM alpine:latest
+RUN apk update && apk add ca-certificates
+ADD status /status
+RUN chmod +x /status
+ENTRYPOINT /status
