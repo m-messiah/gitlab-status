@@ -20,12 +20,12 @@ docker:
     - docker build -t $CI_REGISTRY_IMAGE:latest --build-arg server_url=$STATUS_URL --build-arg gitlab_url=$GITLAB_URL --build-arg app_key=$GITLAB_APP_KEY --build-arg app_secret=$GITLAB_APP_SECRET .
     - docker push $CI_REGISTRY_IMAGE:latest
 
-deploy:
+update:
   stage: deploy
   tags:
     - ansible
   script:
-    - ansible-playbook -i $STATUS_HOST, deploy.yml
+    - ansible-playbook -i s2.kudago, deploy.yml
   dependencies:
     - build
   environment:
