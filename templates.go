@@ -9,9 +9,9 @@ var TEMPLATE_INDEX = `
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GitLab build status</title>
-    <link href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/base-min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css" rel="stylesheet">
+    <link href="//unpkg.com/purecss@0.6.2/build/base-min.css" rel="stylesheet">
+    <link href="//unpkg.com/purecss@0.6.2/build/grids-min.css" rel="stylesheet">
+    <link href="//unpkg.com/purecss@0.6.2/build/grids-responsive-min.css" rel="stylesheet">
     <style>
         html, body { height: 100%;}
         body {font-size: 18px; color: #d8d9da; background-color: #1f1d1d;}

@@ -25,7 +25,7 @@ update:
   tags:
     - ansible
   script:
-    - ansible-playbook -i s2.kudago, deploy.yml
+    - ansible-playbook -i $DOCKER_HOST, deploy.yml
   dependencies:
     - build
   environment:
