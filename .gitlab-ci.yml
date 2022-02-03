@@ -32,5 +32,5 @@ update:
     name: status
     url: https://$STATUS_URL
   only:
-    - master
+    - main
 
