@@ -7,52 +7,56 @@ import (
 	"net/url"
 )
 
-func NewGitLab(gitlab_url, access_key, secret_key string) *GitLab {
+// NewGitLab creates GitLab client instance
+func NewGitLab(gitlabURL, accessKey, secretKey string) *GitLab {
 	return &GitLab{
-		url:              gitlab_url,
-		api_url:          gitlab_url + "/api/v3/projects/",
-		authorize_url:    gitlab_url + "/oauth/authorize",
-		access_token_url: gitlab_url + "/oauth/token",
-		access_key:       access_key,
-		secret_key:       secret_key,
+		url:            gitlabURL,
+		apiURL:         gitlabURL + "/api/v3/projects/",
+		authorizeURL:   gitlabURL + "/oauth/authorize",
+		accessTokenURL: gitlabURL + "/oauth/token",
+		accessKey:      accessKey,
+		secretKey:      secretKey,
 	}
 }
 
-func (self GitLab) Authorize(w http.ResponseWriter, r *http.Request) {
-	u, _ := url.Parse(self.authorize_url)
+func (c GitLab) Authorize(w http.ResponseWriter, r *http.Request) {
+	u, _ := url.Parse(c.authorizeURL)
 	u.RawQuery = url.Values{
-		"client_id":     {self.access_key},
+		"client_id":     {c.accessKey},
 		"response_type": {"code"},
-		"redirect_uri":  {REDIRECT_URL},
+		"redirect_uri":  {RedirectURL},
 	}.Encode()
 	http.Redirect(w, r, u.String(), http.StatusFound)
 }
 
-func (self GitLab) Authorized_response(w http.ResponseWriter, r *http.Request) {
+func (c GitLab) AuthorizedResponse(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query()["code"][0]
 	resp, err := http.PostForm(
-		self.access_token_url,
+		c.accessTokenURL,
 		url.Values{
-			"client_id":     {self.access_key},
-			"client_secret": {self.secret_key},
+			"client_id":     {c.accessKey},
+			"client_secret": {c.secretKey},
 			"code":          {code},
 			"grant_type":    {"authorization_code"},
-			"redirect_uri":  {REDIRECT_URL},
+			"redirect_uri":  {RedirectURL},
 		})
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	var gitlab_response AuthResponse
+	var gitlabResponse AuthResponse
 	defer resp.Body.Close()
-	json.NewDecoder(resp.Body).Decode(&gitlab_response)
-	http.SetCookie(w, &http.Cookie{Name: "gitlab_token", Value: gitlab_response.Access_token})
+	if err = json.NewDecoder(resp.Body).Decode(&gitlabResponse); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{Name: "gitlab_token", Value: gitlabResponse.AccessToken})
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (self GitLab) Get_API_raw(endpoint, archived, per_page, token string) []byte {
+func (c GitLab) GetApiRaw(endpoint, archived, perPage, token string) []byte {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", self.api_url+endpoint+"?per_page="+per_page+"&archived="+archived, nil)
+	req, _ := http.NewRequest("GET", c.apiURL+endpoint+"?per_page="+perPage+"&archived="+archived, nil)
 	req.Header.Add("Authorization", "Bearer "+token)
 	resp, err := client.Do(req)
 	if err != nil {
@@ -63,38 +67,38 @@ func (self GitLab) Get_API_raw(endpoint, archived, per_page, token string) []byt
 	return body
 }
 
-func (self GitLab) Get_API(endpoint, archived, per_page, token string, output interface{}) {
-	body := self.Get_API_raw(endpoint, archived, per_page, token)
-	json.Unmarshal(body, output)
+func (c GitLab) GetApi(endpoint, archived, perPage, token string, output interface{}) {
+	body := c.GetApiRaw(endpoint, archived, perPage, token)
+	_ = json.Unmarshal(body, output)
 }
 
-func (self GitLab) Get_projects(token string) map[int]ApiResponse {
+func (c GitLab) GetProjects(token string) map[int]ApiResponse {
 	var projects []ApiResponse
-	self.Get_API("", "0", "100", token, &projects)
-	projects_map := make(map[int]ApiResponse)
+	c.GetApi("", "0", "100", token, &projects)
+	projectsMap := make(map[int]ApiResponse)
 	for _, project := range projects {
-		if project.Builds_enabled {
-			projects_map[project.Id] = project
+		if project.BuildsEnabled {
+			projectsMap[project.Id] = project
 		}
 	}
-	return projects_map
+	return projectsMap
 }
 
-func (self GitLab) Get_commit(project_id, branch, token string) *Commit {
+func (c GitLab) GetCommit(projectId, branch, token string) *Commit {
 	var response ApiResponse
-	self.Get_API(project_id+"/repository/branches/"+branch, "0", "1", token, &response)
+	c.GetApi(projectId+"/repository/branches/"+branch, "0", "1", token, &response)
 	return &response.Commit
 }
 
-func (self GitLab) Get_builds(project_id, commit_id, branch, token string) []Build {
-	var all_builds []Build
+func (c GitLab) GetBuilds(projectId, commitId, branch, token string) []Build {
+	var allBuilds []Build
 	builds := make([]Build, 0)
-	url := project_id
-	if commit_id != "" {
-		url += "/repository/commits/" + commit_id
+	buildsUrl := projectId
+	if commitId != "" {
+		buildsUrl += "/repository/commits/" + commitId
 	}
-	self.Get_API(url+"/builds", "0", "100", token, &all_builds)
-	for _, build := range all_builds {
+	c.GetApi(buildsUrl+"/builds", "0", "100", token, &allBuilds)
+	for _, build := range allBuilds {
 		if build.Ref == branch {
 			builds = append(builds, build)
 		}
