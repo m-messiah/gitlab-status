@@ -1,6 +1,6 @@
 package main
 
-var TEMPLATE_INDEX = `
+const TemplateIndex = `
 <!DOCTYPE html>
 <html lang="en">
 
@@ -103,7 +103,7 @@ var TEMPLATE_INDEX = `
 </html>
 `
 
-var TEMPLATE_STATUS = `
+const TemplateStatus = `
 <div class="pure-g">
     <div class='pure-u-1-3'>
         <b>{{ .Project.Name }}</b> {{ with .Coverage }}= {{ . }}%{{end}}<br>

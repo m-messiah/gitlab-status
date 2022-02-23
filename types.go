@@ -1,23 +1,23 @@
 package main
 
 type GitLab struct {
-	url              string
-	api_url          string
-	authorize_url    string
-	access_token_url string
-	access_key       string
-	secret_key       string
+	url            string
+	apiURL         string
+	authorizeURL   string
+	accessTokenURL string
+	accessKey      string
+	secretKey      string
 }
 
 type AuthResponse struct {
-	Access_token string
-	Token_type   string
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
 }
 
 type Commit struct {
-	Id          string
-	Message     string
-	Author_name string
+	Id         string
+	Message    string
+	AuthorName string `json:"author_name"`
 }
 
 type Build struct {
@@ -29,11 +29,11 @@ type Build struct {
 }
 
 type ApiResponse struct {
-	Id             int
-	Default_branch string
-	Name           string `json:"path_with_namespace"`
-	Builds_enabled bool
-	Commit         Commit
+	Id            int
+	DefaultBranch string `json:"default_branch"`
+	Name          string `json:"path_with_namespace"`
+	BuildsEnabled bool   `json:"builds_enabled"`
+	Commit        Commit
 }
 
 type Status struct {
